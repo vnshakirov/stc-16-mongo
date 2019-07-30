@@ -1,20 +1,30 @@
 package ru.inno.stc16;
 
 import com.google.gson.Gson;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.*;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
 import ru.inno.stc16.entity.Course;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class MongoDbProducer {
     private MongoClient client;
     private MongoDatabase database;
 
     public void init() {
-        client = MongoClients.create("mongodb://localhost:27017");
+        client = MongoClients.create("mongodb://admin2:1234@localhost:27017/?authSource=STC-16");
+        CodecRegistry registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+        //client = MongoClients.create("mongodb://localhost:27017");
         database = client.getDatabase("STC-16");
+        database = database.withCodecRegistry(registry);
     }
 
     public void close() {
@@ -36,7 +46,7 @@ public class MongoDbProducer {
         while (cursor.hasNext()) {
             Document document = (Document) cursor.next();
             Course course = new Course();
-            course.setId((Integer) document.get("id"));
+            //course.setId((Integer) document.get("id"));
             course.setTitle((String) document.get("title"));
             result.add(course);
         }
@@ -59,5 +69,76 @@ public class MongoDbProducer {
             result.add(object);
         }
         return result;
+    }
+
+    public List<Course> getCourses(String title) {
+        List<Course> result = new LinkedList<>();
+        MongoCollection collection = database.getCollection("Course");
+        Document query = new Document();
+        query.put("title", title);
+        MongoCursor cursor = collection.find(query).iterator();
+        while (cursor.hasNext()) {
+            Document document = (Document) cursor.next();
+            Course object = new Gson().fromJson(document.toJson(), Course.class);
+            result.add(object);
+        }
+        return result;
+    }
+
+    public List<Course> getCourses(int id) {
+        List<Course> result = new LinkedList<>();
+        MongoCollection collection = database.getCollection("Course");
+        MongoCursor cursor = collection.find(Filters.and(Filters.gte("id", id), Filters.eq("title", "The Pinball Masterclass"))).iterator();
+        while (cursor.hasNext()) {
+            Document document = (Document) cursor.next();
+            Course object = new Gson().fromJson(document.toJson(), Course.class);
+            result.add(object);
+        }
+        return result;
+    }
+
+    public void updateCourse(String fieldName, Object oldVal, Object newVal) {
+        MongoCollection collection = database.getCollection("Courses");
+        Document oldDoc = new Document();
+        oldDoc.put(fieldName, oldVal);
+        collection.updateOne(oldDoc, Updates.set(fieldName, newVal));
+    }
+
+    public void insertCourse(Course course) {
+        MongoCollection<Course> collection = database.getCollection("Courses", Course.class);
+        collection.insertOne(course);
+    }
+
+    public List<Course> findCourses() {
+        List<Course> courses = new LinkedList<>();
+        MongoCollection<Course> collection = database.getCollection("Courses", Course.class);
+        Document document = new Document();
+        document.put("title", 1);
+        MongoCursor<Course> cursor = collection.find().sort(document).iterator();
+        while (cursor.hasNext()) {
+            courses.add(cursor.next());
+        }
+        return courses;
+    }
+
+    public void deleteCourse(String fieldName, Object value) {
+        MongoCollection<Course> collection = database.getCollection("Courses", Course.class);
+        Document document = new Document();
+        document.put(fieldName, value);
+        collection.deleteOne(document);
+    }
+
+    public void deleteCourseByFilter(String fieldName, Object value) {
+        MongoCollection<Course> collection = database.getCollection("Courses", Course.class);
+        collection.deleteOne(Filters.eq(fieldName, value));
+    }
+
+    public void mapReduce() {
+        MongoCollection collection = database.getCollection("Courses");
+        String map = "function () {if (this.title == 'The Pinball Masterclass') {emit('count', 1);}}";
+        String reduce = "function(key, value) { var total = 0; for (var i = 0; i < value.length; i++) {" +
+                "total += value[i];}" +
+                "return total;}";
+        collection.mapReduce(map, reduce).forEach((Consumer)System.out::println);
     }
 }

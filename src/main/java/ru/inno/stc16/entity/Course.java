@@ -1,18 +1,18 @@
 package ru.inno.stc16.entity;
 
+import org.bson.types.ObjectId;
+
 import java.util.Objects;
 import java.util.StringJoiner;
 
 public class Course {
 
-  private static int LAST_ID = 0;
-
-  private int id;
+  private ObjectId id;
   private String title;
   transient private Instructor instructor;
 
   public Course() {
-    this.id = LAST_ID++;
+
   }
 
   public Course(String title) {
@@ -20,11 +20,11 @@ public class Course {
     this.title = title;
   }
 
-  public int getId() {
+  public ObjectId getId() {
     return id;
   }
 
-  public void setId(int id) {
+  public void setId(ObjectId id) {
     this.id = id;
   }
 

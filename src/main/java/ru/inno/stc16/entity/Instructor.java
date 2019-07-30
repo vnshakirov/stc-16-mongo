@@ -1,5 +1,7 @@
 package ru.inno.stc16.entity;
 
+import org.bson.types.ObjectId;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
@@ -8,7 +10,7 @@ public class Instructor {
 
   private static int LAST_ID = 0;
 
-  private int id;
+  private ObjectId id;
   private String firstName;
   private String lastName;
   private String email;
@@ -16,7 +18,6 @@ public class Instructor {
   private List<Course> courses;
 
   public Instructor() {
-    this.id = LAST_ID++;
   }
 
   public Instructor(String firstName, String lastName, String email) {
@@ -26,11 +27,11 @@ public class Instructor {
     this.email = email;
   }
 
-  public int getId() {
+  public ObjectId getId() {
     return id;
   }
 
-  public void setId(int id) {
+  public void setId(ObjectId id) {
     this.id = id;
   }
 

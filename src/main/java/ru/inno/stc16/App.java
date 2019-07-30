@@ -28,21 +28,38 @@ public class App {
     Course tempCourse2 = new Course("The Pinball Masterclass");
     tempCourse2.setInstructor(instructor);
     courses.add(tempCourse2);
-    producer.addCourse(tempCourse1);
-    producer.addCourse(tempCourse2);
+    producer.insertCourse(tempCourse1);
+    producer.insertCourse(tempCourse2);
+    //producer.addCourse(tempCourse1);
 
-    instructor.setCourses(courses);
-    producer.addObject(instructor, "Instructor");
+    //instructor.setCourses(courses);
+    //producer.addObject(instructor, "Instructor");
 
 
     System.out.println("==========================================");
-    producer.getCourses().forEach(System.out::println);
+    //producer.getObjectList("Instructor", Instructor.class);
+    System.out.println("================DELETE=================");
+    //producer.deleteCourse("title", "Air Guitar - The Ultimate Guide");
+    producer.findCourses().forEach(System.out::println);
+    producer.mapReduce();
+    System.out.println("================UPDATE=================");
+    producer.updateCourse("title", "The Pinball Masterclass", "The Pinball Masterclass2");
+    producer.findCourses().forEach(System.out::println);
+
+    //producer.deleteCourseByFilter("title", "Air Guitar - The Ultimate Guide");
+    //producer.findCourses().forEach(System.out::println);
     System.out.println("==========================================");
-    producer.getObjectList("Instructor", Instructor.class).forEach(System.out::println);
+    //producer.getCourses().forEach(System.out::println);
     System.out.println("==========================================");
+    //producer.getObjectList("Instructor", Instructor.class).forEach(System.out::println);
     System.out.println("==========================================");
+    //producer.getCourses("The Pinball Masterclass").forEach(System.out::println);
+    System.out.println("===================ID===================");
+    //producer.updateCourse("title", "The Pinball Masterclass", 2);
     System.out.println("==========================================");
+    //producer.getCourses(1).forEach(System.out::println);
     System.out.println("==========================================");
+    //producer.getCourses(2).forEach(System.out::println);
     producer.close();
   }
 }
